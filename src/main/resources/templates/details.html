@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${book.title}">Книга</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding: 20px;
+            font-family: Arial;
+            background: #f0f0f0;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border: 1px solid #ddd;
+            margin-top: 20px;
+        }
+        .book-img {
+            max-width: 200px;
+            border: 1px solid #ccc;
+        }
+        h2 {
+            font-size: 1.5rem;
+            margin-top: 0;
+        }
+        .price {
+            font-weight: bold;
+            color: red;
+            font-size: 1.3rem;
+            margin: 10px 0;
+        }
+        .details {
+            margin: 15px 0;
+        }
+        .details p {
+            margin: 5px 0;
+        }
+        .btn {
+            padding: 5px 10px;
+            margin-right: 5px;
+        }
+        .status {
+            display: inline-block;
+            padding: 3px 8px;
+            background: #eee;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-md-3">
+            <img th:src="@{${book.coverImagePath}}" class="book-img">
+        </div>
+        <div class="col-md-9">
+            <h2 th:text="${book.title}"></h2>
+            <p th:text="${book.author}"></p>
+            <div class="price" th:text="${book.price} + ' руб.'"></div>
+
+            <div th:if="${book.quantity >= 1 and book.quantity < 5}" class="status">
+                Осталось: [[${book.quantity}]] шт.
+            </div>
+            <div th:if="${book.quantity < 1}" class="status" style="background:#ffdddd;">
+                Нет в наличии
+            </div>
+            <div th:if="${book.quantity >= 5}" class="status" style="background:#ddffdd;">
+                В наличии
+            </div>
+
+            <div class="details">
+                <p><strong>ISBN:</strong> <span th:text="${book.isbn} ?: '-'"></span></p>
+                <p><strong>Язык:</strong> <span th:text="${book.language} ?: '-'"></span></p>
+                <p><strong>Год:</strong> <span th:text="${book.publicationYear} ?: '-'"></span></p>
+            </div>
+
+            <div th:if="${book.description}">
+                <p><strong>Описание:</strong></p>
+                <p th:text="${book.description}"></p>
+            </div>
+
+            <div sec:authorize="hasRole('USER')">
+                <div th:if="${quantityInCart > 0}">
+                    <p>В корзине: [[${quantityInCart}]] шт.</p>
+                    <a th:href="@{'/cart/add/' + ${book.id}}" class="btn btn-primary">Добавить ещё</a>
+                </div>
+                <div th:if="${quantityInCart == 0}">
+                    <a th:href="@{'/cart/add/' + ${book.id}}" class="btn btn-primary">В корзину</a>
+                </div>
+            </div>
+
+            <div sec:authorize="isAnonymous()">
+                <a href="/register" class="btn btn-secondary">Зарегистрироваться</a>
+            </div>
+
+            <div sec:authorize="hasRole('EMPLOYEE')" style="margin-top:20px; padding-top:10px; border-top:1px solid #ddd;">
+                <form th:action="@{'/books/delete/' + ${book.id}}" method="post">
+                    <button type="submit" class="btn btn-danger">Удалить</button>
+                </form>
+                <a th:href="@{'/books/edit/' + ${book.id}}" class="btn btn-warning">Редактировать</a>
+
+                <div style="margin-top:10px;">
+                    <form th:action="@{'/books/' + ${book.id} + '/increase'}" method="post" style="display:inline;">
+                        <input type="number" name="amount" min="1" value="1" style="width:60px;">
+                        <button type="submit" class="btn btn-success">+</button>
+                    </form>
+                    <form th:action="@{'/books/' + ${book.id} + '/decrease'}" method="post" style="display:inline; margin-left:10px;">
+                        <input type="number" name="amount" min="1" value="1" style="width:60px;">
+                        <button type="submit" class="btn btn-danger">-</button>
+                    </form>
+                </div>
+            </div>
+
+            <div style="margin-top:20px;">
+                <a href="/" class="btn btn-secondary">Назад</a>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
